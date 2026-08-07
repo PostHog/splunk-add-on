@@ -99,9 +99,10 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter) ->
             api_key = account.get("api_key")
             host = account.get("posthog_host")
 
-            store = checkpointer.KVStoreCheckpointer(
-                f"{ADDON_NAME}_checkpoints", session_key, ADDON_NAME
-            )
+            # File rather than KV Store: the position is a single string per input with no
+            # need for replication, and a KV Store that fails to start would otherwise stop
+            # collection entirely.
+            store = checkpointer.FileCheckpointer(inputs.metadata["checkpoint_dir"])
             cursor = store.get(normalized_input_name)
             url = cursor or first_url(
                 host,
@@ -135,6 +136,16 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter) ->
                     logger.warning(f"Could not reach PostHog: {exc.reason}")
                     break
 
+                # Validate before emitting. A page whose next link cannot be followed ends
+                # collection, and emitting it first would re-ingest the same events on every
+                # later run, since there is no position to resume from.
+                next_url = body.get("next")
+                if next_url and not same_origin(next_url, host):
+                    logger.error(
+                        "PostHog returned a next link to another host; stopping without ingesting this page"
+                    )
+                    break
+
                 events = body.get("results", [])
                 for event in events:
                     event_writer.write_event(
@@ -149,10 +160,6 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter) ->
                     )
                 emitted += len(events)
 
-                next_url = body.get("next")
-                if next_url and not same_origin(next_url, host):
-                    logger.error("PostHog returned a next link to another host; stopping")
-                    break
                 if next_url:
                     store.update(normalized_input_name, next_url)
                 # With follow=true the cursor stays valid at the tail, so an empty page means

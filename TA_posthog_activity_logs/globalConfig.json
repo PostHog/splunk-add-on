@@ -17,7 +17,7 @@
                                 "field": "name"
                             },
                             {
-                                "label": "Region",
+                                "label": "Host",
                                 "field": "posthog_host"
                             }
                         ]
@@ -43,30 +43,17 @@
                             ]
                         },
                         {
-                            "type": "singleSelect",
-                            "label": "Region",
+                            "type": "text",
+                            "label": "PostHog host",
                             "field": "posthog_host",
-                            "help": "The PostHog region your organization is in.",
+                            "help": "https://us.posthog.com, https://eu.posthog.com, or your self-hosted address.",
                             "required": true,
                             "defaultValue": "https://us.posthog.com",
-                            "options": {
-                                "disableSearch": true,
-                                "autoCompleteFields": [
-                                    {
-                                        "label": "US Cloud",
-                                        "value": "https://us.posthog.com"
-                                    },
-                                    {
-                                        "label": "EU Cloud",
-                                        "value": "https://eu.posthog.com"
-                                    }
-                                ]
-                            },
                             "validators": [
                                 {
                                     "type": "regex",
-                                    "pattern": "^https://(us|eu)\\.posthog\\.com$",
-                                    "errorMsg": "Region must be https://us.posthog.com or https://eu.posthog.com"
+                                    "pattern": "^https://[A-Za-z0-9.-]+(:[0-9]{1,5})?$",
+                                    "errorMsg": "Enter an https address with no path, for example https://posthog.example.com"
                                 }
                             ]
                         },
@@ -90,7 +77,9 @@
                                 }
                             ]
                         }
-                    ]
+                    ],
+                    "restHandlerModule": "posthog_account_handler",
+                    "restHandlerClass": "PostHogAccountHandler"
                 },
                 {
                     "type": "loggingTab"

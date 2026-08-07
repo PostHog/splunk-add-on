@@ -59,7 +59,7 @@ Open the add-on from the Splunk apps menu.
    | Field | Value |
    | --- | --- |
    | Name | A name for the account, so you can pick it when you add an input |
-   | Region | US Cloud or EU Cloud |
+   | PostHog host | `https://us.posthog.com`, `https://eu.posthog.com`, or your self-hosted address |
    | Personal API key | A key with the `activity_log:read` scope |
 
 2. On the **Inputs** tab, click **Create New Input** and enter:
@@ -91,6 +91,21 @@ events larger and sends that content to Splunk, where it counts toward your inge
 The key is held in Splunk's encrypted credential store. The account configuration keeps only a
 masked placeholder.
 
+Changing an account's host requires entering the key again. A key is authorized for the host
+it was entered against, so it does not travel to a new one on its own.
+
+### Self-hosted PostHog
+
+Enter your own address as the host. Two things it needs:
+
+- **https.** The key is sent as a bearer token on every request, so the add-on will not use a
+  plain HTTP address.
+- **A preserved `Host` header**, if PostHog sits behind a reverse proxy. PostHog builds the
+  paging links in its responses from the host it sees. If the proxy replaces that with an
+  internal address, the links point somewhere the add-on will not follow, and collection stops
+  after the first page with `returned a next link to another host` in the log. Most proxies do
+  this with `proxy_set_header Host $host` or the equivalent.
+
 ## Verify
 
 ```
@@ -121,6 +136,7 @@ Raise the detail level on the **Configuration > Logging** tab.
 | `401` from PostHog | The personal API key is wrong or was revoked |
 | `403` from PostHog | The key does not have the `activity_log:read` scope |
 | Runs but indexes nothing | The input is up to date. Make a change in PostHog and wait for the next poll |
+| `returned a next link to another host` | PostHog is behind a proxy that does not preserve the `Host` header. See Self-hosted PostHog above |
 | Events all share one timestamp | A `props.conf` override is setting the event time. This add-on sets it explicitly |
 
 To re-read history from the beginning, delete the input and add it again.
