@@ -80,7 +80,7 @@ events larger and sends that content to Splunk, where it counts toward your inge
 
 The key you enter is moved into Splunk's encrypted credential store
 (`storage/passwords`) on the first run, and the input's stored configuration is rewritten to
-`<stored>`. It is not kept in plaintext in `inputs.conf`.
+`<stored>`.
 
 ## Verify
 
