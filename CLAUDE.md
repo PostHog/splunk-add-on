@@ -171,3 +171,15 @@ every build.
 
 The warnings AppInspect still reports are all either informational ("no action required") or in
 vendored libraries, so they cannot be fixed from this repo.
+
+AppInspect also reports three `future_failure` checks, which pass today and are scheduled to
+become failures. All three are in files UCC generates, so the fix is usually a UCC upgrade rather
+than an edit here, and hand-editing `restmap.conf` breaks the generated stanzas:
+
+- `inputs.conf` and `restmap.conf` do not set `python.required`. Splunk wants each extension point
+  to name its runtime explicitly. Note that pinning a runtime interacts with the supported version
+  range above, since 3.13 only exists from Splunk 10.2.
+- `appserver/templates/base.html` is a custom Mako template, deprecated in Splunk 10.4.
+
+Watch these when bumping UCC, and re-check the gate. A `future_failure` becomes a hard rejection
+the day AppInspect promotes it.
