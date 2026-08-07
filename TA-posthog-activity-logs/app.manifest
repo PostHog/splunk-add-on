@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "2.0.0",
+  "info": {
+    "title": "PostHog activity logs",
+    "id": {
+      "group": null,
+      "name": "TA-posthog-activity-logs",
+      "version": "0.1.0"
+    },
+    "author": [
+      {
+        "name": "PostHog",
+        "email": null,
+        "company": "PostHog"
+      }
+    ],
+    "releaseDate": null,
+    "description": "Collect PostHog activity logs as OCSF events for security monitoring and compliance.",
+    "classification": {
+      "intendedAudience": null,
+      "categories": [],
+      "developmentStatus": null
+    },
+    "commonInformationModels": null,
+    "license": {
+      "name": "MIT",
+      "text": "../LICENSE",
+      "uri": null
+    },
+    "privacyPolicy": {
+      "name": null,
+      "text": null,
+      "uri": null
+    },
+    "releaseNotes": {
+      "name": null,
+      "text": "./README.md",
+      "uri": null
+    }
+  },
+  "dependencies": null,
+  "tasks": null,
+  "inputGroups": null,
+  "incompatibleApps": null,
+  "platformRequirements": null
+}
