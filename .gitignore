@@ -1,7 +1,6 @@
-# Splunk writes runtime state here: local config, the migrated credential, checkpoints.
-# None of it belongs in version control.
-TA-posthog-activity-logs/local/
-TA-posthog-activity-logs/metadata/local.meta
+# ucc-gen build artifacts. The built package bundles platform-specific binaries from the
+# machine that ran the build, so releases are built in CI rather than committed.
+output/
 *.tar.gz
 *.spl
 __pycache__/

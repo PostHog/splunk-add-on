@@ -4,8 +4,8 @@
     "title": "PostHog activity logs",
     "id": {
       "group": null,
-      "name": "TA-posthog-activity-logs",
-      "version": "0.1.0"
+      "name": "TA_posthog_activity_logs",
+      "version": "0.2.0"
     },
     "author": [
       {
@@ -17,14 +17,16 @@
     "releaseDate": null,
     "description": "Collect PostHog activity logs as OCSF events for security monitoring and compliance.",
     "classification": {
-      "intendedAudience": null,
-      "categories": [],
-      "developmentStatus": null
+      "intendedAudience": "IT Professionals",
+      "categories": [
+        "Security, Fraud & Compliance"
+      ],
+      "developmentStatus": "Production/Stable"
     },
     "commonInformationModels": null,
     "license": {
       "name": "MIT",
-      "text": "../LICENSE",
+      "text": "LICENSES/LICENSE.txt",
       "uri": null
     },
     "privacyPolicy": {
@@ -34,7 +36,7 @@
     },
     "releaseNotes": {
       "name": null,
-      "text": "./README.md",
+      "text": "./README.txt",
       "uri": null
     }
   },
@@ -42,5 +44,13 @@
   "tasks": null,
   "inputGroups": null,
   "incompatibleApps": null,
-  "platformRequirements": null
+  "platformRequirements": null,
+  "supportedDeployments": [
+    "_standalone",
+    "_distributed",
+    "_search_head_clustering"
+  ],
+  "targetWorkloads": [
+    "_search_heads"
+  ]
 }

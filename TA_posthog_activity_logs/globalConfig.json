@@ -1,0 +1,226 @@
+{
+    "pages": {
+        "configuration": {
+            "tabs": [
+                {
+                    "name": "account",
+                    "title": "PostHog account",
+                    "table": {
+                        "actions": [
+                            "edit",
+                            "delete",
+                            "clone"
+                        ],
+                        "header": [
+                            {
+                                "label": "Name",
+                                "field": "name"
+                            },
+                            {
+                                "label": "Region",
+                                "field": "posthog_host"
+                            }
+                        ]
+                    },
+                    "entity": [
+                        {
+                            "type": "text",
+                            "label": "Name",
+                            "field": "name",
+                            "help": "A name for this account, so you can pick it when you add an input.",
+                            "required": true,
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "pattern": "^[a-zA-Z]\\w*$",
+                                    "errorMsg": "Start with a letter, then letters, numbers, or underscores."
+                                },
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 50
+                                }
+                            ]
+                        },
+                        {
+                            "type": "singleSelect",
+                            "label": "Region",
+                            "field": "posthog_host",
+                            "help": "The PostHog region your organization is in.",
+                            "required": true,
+                            "defaultValue": "https://us.posthog.com",
+                            "options": {
+                                "disableSearch": true,
+                                "autoCompleteFields": [
+                                    {
+                                        "label": "US Cloud",
+                                        "value": "https://us.posthog.com"
+                                    },
+                                    {
+                                        "label": "EU Cloud",
+                                        "value": "https://eu.posthog.com"
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "label": "Personal API key",
+                            "field": "api_key",
+                            "help": "Create one in PostHog under Settings, User, Personal API keys. It needs the activity_log:read scope.",
+                            "required": true,
+                            "encrypted": true,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 200
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "type": "loggingTab"
+                }
+            ],
+            "title": "Configuration",
+            "description": "Add the PostHog account this add-on collects from."
+        },
+        "inputs": {
+            "services": [
+                {
+                    "name": "posthog_activity_logs",
+                    "title": "PostHog activity logs",
+                    "subTitle": "Collect activity logs from PostHog as OCSF events.",
+                    "entity": [
+                        {
+                            "type": "text",
+                            "label": "Name",
+                            "field": "name",
+                            "help": "A name for this input.",
+                            "required": true,
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "pattern": "^[a-zA-Z]\\w*$",
+                                    "errorMsg": "Start with a letter, then letters, numbers, or underscores."
+                                },
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                }
+                            ]
+                        },
+                        {
+                            "type": "singleSelect",
+                            "label": "Account",
+                            "field": "account",
+                            "help": "The PostHog account to collect from.",
+                            "required": true,
+                            "options": {
+                                "referenceName": "account"
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "label": "Organization ID",
+                            "field": "organization_id",
+                            "help": "Collects activity across every project in this organization. Find it in PostHog under Settings, Organization.",
+                            "required": true,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 1,
+                                    "maxLength": 100
+                                }
+                            ]
+                        },
+                        {
+                            "type": "interval",
+                            "label": "Interval",
+                            "field": "interval",
+                            "help": "How often to check PostHog for new entries, in seconds.",
+                            "required": true,
+                            "defaultValue": "300"
+                        },
+                        {
+                            "type": "index",
+                            "label": "Index",
+                            "field": "index",
+                            "help": "The index to write events to. You need this to search them.",
+                            "required": true,
+                            "defaultValue": "default"
+                        },
+                        {
+                            "type": "checkbox",
+                            "label": "Include changed values",
+                            "field": "include_values",
+                            "help": "Adds the previous and new value of every changed field. These can hold the content of the changed object, which makes events larger. Off by default.",
+                            "required": false,
+                            "defaultValue": 0
+                        },
+                        {
+                            "type": "text",
+                            "label": "Start date",
+                            "field": "start_date",
+                            "help": "Optional. Collect from this point on the first run only, for example 2026-01-01T00:00:00Z. Later runs resume where the last one stopped.",
+                            "required": false,
+                            "validators": [
+                                {
+                                    "type": "string",
+                                    "minLength": 0,
+                                    "maxLength": 40
+                                }
+                            ]
+                        }
+                    ],
+                    "inputHelperModule": "posthog_activity_logs_helper"
+                }
+            ],
+            "title": "Inputs",
+            "description": "Add an input for each PostHog organization you want to collect from.",
+            "table": {
+                "actions": [
+                    "edit",
+                    "delete",
+                    "clone"
+                ],
+                "header": [
+                    {
+                        "label": "Name",
+                        "field": "name"
+                    },
+                    {
+                        "label": "Organization",
+                        "field": "organization_id"
+                    },
+                    {
+                        "label": "Interval",
+                        "field": "interval"
+                    },
+                    {
+                        "label": "Index",
+                        "field": "index"
+                    },
+                    {
+                        "label": "Status",
+                        "field": "disabled"
+                    }
+                ]
+            }
+        }
+    },
+    "meta": {
+        "name": "TA_posthog_activity_logs",
+        "restRoot": "TA_posthog_activity_logs",
+        "version": "0.2.0",
+        "displayName": "PostHog activity logs",
+        "schemaVersion": "0.0.10",
+        "supportedThemes": [
+            "light",
+            "dark"
+        ]
+    }
+}
