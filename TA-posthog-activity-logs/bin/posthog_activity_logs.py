@@ -54,27 +54,27 @@ def do_scheme():
     <args>
       <arg name="posthog_host">
         <title>PostHog host</title>
-        <description>Region host, for example https://us.posthog.com or https://eu.posthog.com</description>
+        <description>https://us.posthog.com or https://eu.posthog.com</description>
         <required_on_create>true</required_on_create>
       </arg>
       <arg name="organization_id">
         <title>Organization ID</title>
-        <description>Collects activity across every project in this organization</description>
+        <description>Covers every project in the organization</description>
         <required_on_create>true</required_on_create>
       </arg>
       <arg name="personal_api_key">
         <title>Personal API key</title>
-        <description>A PostHog personal API key with the activity_log:read scope</description>
+        <description>Needs the activity_log:read scope</description>
         <required_on_create>true</required_on_create>
       </arg>
       <arg name="include_values">
         <title>Include changed values</title>
-        <description>Include the previous and new values of changed fields. This can include the content of the changed object and increases event size. Defaults to false.</description>
+        <description>Adds before and after values. Off by default</description>
         <required_on_create>false</required_on_create>
       </arg>
       <arg name="start_date">
         <title>Start date</title>
-        <description>Optional ISO-8601 lower bound for the first run, for example 2026-01-01T00:00:00Z. Later runs resume from the saved cursor.</description>
+        <description>Optional. First run only, for example 2026-01-01T00:00:00Z</description>
         <required_on_create>false</required_on_create>
       </arg>
     </args>
