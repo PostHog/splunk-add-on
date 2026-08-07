@@ -1,0 +1,9 @@
+# Splunk writes runtime state here: local config, the migrated credential, checkpoints.
+# None of it belongs in version control.
+TA-posthog-activity-logs/local/
+TA-posthog-activity-logs/metadata/local.meta
+*.tar.gz
+*.spl
+__pycache__/
+*.pyc
+.DS_Store
