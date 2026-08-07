@@ -139,7 +139,11 @@ Raise the detail level on the **Configuration > Logging** tab.
 | `returned a next link to another host` | PostHog is behind a proxy that does not preserve the `Host` header. See Self-hosted PostHog above |
 | Events all share one timestamp | A `props.conf` override is setting the event time. This add-on sets it explicitly |
 
-To re-read history from the beginning, delete the input and add it again.
+To re-read history from the beginning, add a new input with a **different name**. The collection
+position is stored per input name and is not removed when an input is deleted, so an input
+recreated under the same name resumes where the old one stopped and collects nothing.
+
+Deduplicate on `metadata.uid` if the re-read overlaps entries you already have.
 
 ## Build from source
 

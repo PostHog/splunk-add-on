@@ -74,7 +74,11 @@ jobs:
         run: |
           cd TA_posthog_activity_logs
           ucc-gen package --path "output/TA_posthog_activity_logs"
-          mv TA_posthog_activity_logs-*.tar.gz "../TA_posthog_activity_logs-${{ steps.version.outputs.version }}.spl"
+          version="${{ steps.version.outputs.version }}"
+          # Splunkbase and Splunk's installer expect .spl; the same bytes are also published as
+          # .tar.gz for anything that wants the conventional extension.
+          cp TA_posthog_activity_logs-*.tar.gz "../TA_posthog_activity_logs-${version}.spl"
+          mv TA_posthog_activity_logs-*.tar.gz "../TA_posthog_activity_logs-${version}.tar.gz"
 
       - name: "AppInspect: Splunk Cloud vetting"
         run: |
@@ -115,7 +119,9 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: TA_posthog_activity_logs-${{ steps.version.outputs.version }}
-          path: TA_posthog_activity_logs-${{ steps.version.outputs.version }}.spl
+          path: |
+            TA_posthog_activity_logs-${{ steps.version.outputs.version }}.spl
+            TA_posthog_activity_logs-${{ steps.version.outputs.version }}.tar.gz
           retention-days: 90
 
       - name: Extract release notes
@@ -138,6 +144,7 @@ jobs:
           gh release create "${GITHUB_REF_NAME}" \
             --title "${GITHUB_REF_NAME}" \
             --notes-file release-notes.md \
-            "TA_posthog_activity_logs-${{ steps.version.outputs.version }}.spl"
+            "TA_posthog_activity_logs-${{ steps.version.outputs.version }}.spl" \
+            "TA_posthog_activity_logs-${{ steps.version.outputs.version }}.tar.gz"
         env:
           GH_TOKEN: ${{ github.token }}
