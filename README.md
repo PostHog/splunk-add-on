@@ -152,9 +152,15 @@ cd TA_posthog_activity_logs
 ucc-gen build --source package --ta-version <version>
 ```
 
-The result lands in `output/TA_posthog_activity_logs`. Build on the platform you deploy to:
-the build bundles compiled dependencies for the machine it runs on, so a macOS build is not
-installable on Linux.
+The result lands in `output/TA_posthog_activity_logs`.
+
+`package/lib/exclude.txt` drops dependencies that solnlib and splunklib declare but this add-on
+never reaches, chiefly gRPC and OpenTelemetry. That leaves the build pure Python, so it carries
+no compiled extensions and the same package installs on any platform.
+
+Adding a dependency that pulls those back in, or importing `solnlib.observability` or
+`splunklib.ai`, reintroduces platform-specific binaries. Build on the target platform if that
+ever happens.
 
 ## Support
 

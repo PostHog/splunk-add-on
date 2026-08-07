@@ -1,3 +1,23 @@
-# Exclude the following packages from being installed in the add-on
-# You can add here packages that are shipped with Splunk by default
-# Please add one dependency name per line, similarly to requirements.txt
+# Packages pulled in transitively that this add-on never reaches.
+#
+# solnlib declares gRPC and OpenTelemetry for solnlib.observability, and splunklib
+# declares them for splunklib.ai. Neither is listed in its package __init__, and this
+# add-on imports neither, so nothing here is reachable from bin/. Dropping them takes
+# ~20 MB off the package.
+#
+# solnlib.observability is the only importer of opentelemetry, and it imports grpc
+# lazily inside a function. If a future change imports solnlib.observability or
+# splunklib.ai, remove the matching lines here.
+grpcio
+protobuf
+googleapis-common-protos
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-proto
+opentelemetry-semantic-conventions
+opentelemetry-exporter-otlp-proto-grpc
+opentelemetry-exporter-otlp-proto-common
+
+# SOCKS proxy support, reachable only through urllib3.contrib.socks, which this
+# add-on does not use.
+PySocks
