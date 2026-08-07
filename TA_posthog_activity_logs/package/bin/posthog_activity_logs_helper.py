@@ -9,7 +9,7 @@ stable across replays and can be used to deduplicate.
 import json
 import logging
 from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlsplit
 from urllib.request import Request, urlopen
 
 import import_declare_test  # noqa: F401  UCC import shim, must come before solnlib
@@ -47,6 +47,18 @@ def first_url(host: str, organization_id: str, include_values: bool, start_date:
     if start_date:
         params["start_date"] = start_date
     return f"{host.rstrip('/')}/api/organizations/{organization_id}/advanced_activity_logs/?{urlencode(params)}"
+
+
+def same_origin(url: str, host: str) -> bool:
+    """True when `url` points at the configured PostHog host over https.
+
+    Every request carries the personal API key, so a URL that came from a response body is
+    only safe to follow once it is known to lead back to the same place. Without this check a
+    tampered `next` link would redirect the key to a host of the responder's choosing, and
+    because the link is checkpointed it would keep going there on every later run.
+    """
+    target, expected = urlsplit(url), urlsplit(host)
+    return target.scheme == "https" and target.netloc == expected.netloc
 
 
 def fetch(url: str, api_key: str) -> dict:
@@ -100,6 +112,17 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter) ->
 
             index = input_item.get("index")
             emitted = 0
+            if not same_origin(url, host):
+                # A stored cursor that no longer matches the account host: either the account
+                # was repointed or the checkpoint was tampered with. Start over rather than
+                # send the key somewhere unexpected.
+                logger.warning("Ignoring a saved position that does not lead to the account host")
+                url = first_url(
+                    host,
+                    input_item.get("organization_id"),
+                    str(input_item.get("include_values", "0")) in ("1", "true", "True"),
+                    input_item.get("start_date") or "",
+                )
             while url:
                 try:
                     body = fetch(url, api_key)
@@ -127,6 +150,9 @@ def stream_events(inputs: smi.InputDefinition, event_writer: smi.EventWriter) ->
                 emitted += len(events)
 
                 next_url = body.get("next")
+                if next_url and not same_origin(next_url, host):
+                    logger.error("PostHog returned a next link to another host; stopping")
+                    break
                 if next_url:
                     store.update(normalized_input_name, next_url)
                 # With follow=true the cursor stays valid at the tail, so an empty page means
