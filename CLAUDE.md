@@ -112,9 +112,8 @@ Do not weaken these without understanding what they prevent.
   host. Validating after indexing also re-ingests the same page on every later run, because the
   run ends with no position saved.
 - **Changing an account's host requires the key again.** The REST handler rejects an edit that
-  changes the host while keeping the stored key, and it fails closed when it cannot read the
-  current host. An earlier version called a method that did not exist and swallowed the
-  exception, which allowed the change.
+  changes the host while keeping the stored key. It must fail closed: if it cannot read the
+  account's current host, it rejects the edit rather than allowing it.
 - **https only.** The key is a bearer token on every request, so the host validator rejects plain
   HTTP.
 - Never log the key, and never put it in `inputs.conf`. It belongs in Splunk's credential store.
@@ -172,14 +171,17 @@ every build.
 The warnings AppInspect still reports are all either informational ("no action required") or in
 vendored libraries, so they cannot be fixed from this repo.
 
-AppInspect also reports three `future_failure` checks, which pass today and are scheduled to
-become failures. All three are in files UCC generates, so the fix is usually a UCC upgrade rather
-than an edit here, and hand-editing `restmap.conf` breaks the generated stanzas:
+AppInspect also reports `future_failure` checks, which pass today and are scheduled to become
+failures. One is outstanding:
 
-- `inputs.conf` and `restmap.conf` do not set `python.required`. Splunk wants each extension point
-  to name its runtime explicitly. Note that pinning a runtime interacts with the supported version
-  range above, since 3.13 only exists from Splunk 10.2.
-- `appserver/templates/base.html` is a custom Mako template, deprecated in Splunk 10.4.
+- `appserver/templates/base.html` is a custom Mako template, deprecated in Splunk 10.4. UCC
+  generates it and both views load the UI through it (`template=` in
+  `default/data/ui/views/*.xml`), so deleting it breaks the Configuration and Inputs pages. There
+  is no UCC option to avoid it as of 6.5.3. This one has to be fixed upstream in UCC.
 
-Watch these when bumping UCC, and re-check the gate. A `future_failure` becomes a hard rejection
-the day AppInspect promotes it.
+The `python.required` future failures were resolved by setting `meta.supportedPythonVersion` in
+`globalConfig.json`, which makes UCC emit `python.required` into `inputs.conf` and `restmap.conf`.
+Keep that list in step with the supported range above, and never hand-edit the generated conf.
+
+Re-check the gate when bumping UCC. A `future_failure` becomes a hard rejection the day AppInspect
+promotes it.

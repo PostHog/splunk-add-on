@@ -4,6 +4,12 @@ Each version needs a `## <version>` section with bullet points. The release work
 section matching the tag and publishes it as the release notes, and it fails the build when the
 section is missing.
 
+## 0.5.0
+
+- Declare the Python runtimes the add-on supports, 3.9 and 3.13, on the modular input and the REST
+  handlers. Splunk is moving toward requiring this, and without it the add-on would start failing
+  Splunk Cloud vetting once the check is enforced.
+
 ## 0.4.0
 
 - Use the PostHog logo for the app icon, replacing the UCC placeholder.
