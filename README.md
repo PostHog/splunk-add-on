@@ -115,7 +115,7 @@ To re-read history from the beginning, delete the input's checkpoint under
 ## Support
 
 Having issues with PostHog's add-on?
-[Ping us](https://us.posthog.com/#panel=support:support:platform_addons:medium) and we'll get it
+[Ping us](https://us.posthog.com/#panel=support:support) and we'll get it
 sorted for you.
 
 ## License

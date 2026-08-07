@@ -46,7 +46,7 @@ def do_scheme():
     print(
         """<scheme>
   <title>PostHog activity logs</title>
-  <description>Collect PostHog activity logs as OCSF events. Having issues with PostHog's add-on? Ping us at https://us.posthog.com/#panel=support:support:platform_addons:medium and we'll get it sorted for you.</description>
+  <description>Collect PostHog activity logs as OCSF events. Having issues with PostHog's add-on? Ping us at https://us.posthog.com/#panel=support:support and we'll get it sorted for you.</description>
   <use_external_validation>true</use_external_validation>
   <streaming_mode>xml</streaming_mode>
   <use_single_instance>false</use_single_instance>
