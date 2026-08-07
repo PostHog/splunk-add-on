@@ -133,7 +133,14 @@
                             "required": true,
                             "options": {
                                 "referenceName": "account"
-                            }
+                            },
+                            "validators": [
+                                {
+                                    "type": "regex",
+                                    "pattern": "^[a-zA-Z]\\w*$",
+                                    "errorMsg": "Pick an account from the list."
+                                }
+                            ]
                         },
                         {
                             "type": "text",
