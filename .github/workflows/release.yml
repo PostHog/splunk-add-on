@@ -1,0 +1,143 @@
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write # creating the release on a tag
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Resolve version
+        id: version
+        run: |
+          version=$(python -c "import json;print(json.load(open('TA_posthog_activity_logs/globalConfig.json'))['meta']['version'])")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Version in globalConfig.json: $version"
+
+          # A tag must name the version it ships, or the release would carry the wrong notes.
+          if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            tag_version="${GITHUB_REF_NAME#v}"
+            if [ "$tag_version" != "$version" ]; then
+              echo "::error::Tag ${GITHUB_REF_NAME} does not match globalConfig.json version $version"
+              exit 1
+            fi
+          fi
+
+      - name: Check release notes exist
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          if ! grep -qE "^## +${version//./\\.}( |$)" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no '## $version' section. Every version needs bullet-pointed release notes; the release page is generated from them."
+            exit 1
+          fi
+
+      - name: Install build tooling
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq libmagic1
+          pip install --quiet splunk-add-on-ucc-framework splunk-appinspect
+
+      - name: Build
+        run: |
+          cd TA_posthog_activity_logs
+          ucc-gen build --source package --ta-version "${{ steps.version.outputs.version }}"
+
+      - name: Assert the build stayed pure Python
+        run: |
+          # Compiled extensions would pin the package to the platform that built it. The
+          # exclusions in package/lib/exclude.txt keep the tree pure Python; this catches a
+          # dependency that quietly reintroduces a binary.
+          found=$(find TA_posthog_activity_logs/output -name "*.so" -o -name "*.pyd" -o -name "*.dylib")
+          if [ -n "$found" ]; then
+            echo "::error::Compiled extensions present, so the package is no longer platform independent:"
+            echo "$found"
+            exit 1
+          fi
+          echo "No compiled extensions."
+
+      - name: Package
+        run: |
+          cd TA_posthog_activity_logs
+          ucc-gen package --path "output/TA_posthog_activity_logs"
+          mv TA_posthog_activity_logs-*.tar.gz "../TA_posthog_activity_logs-${{ steps.version.outputs.version }}.spl"
+
+      - name: "AppInspect: Splunk Cloud vetting"
+        run: |
+          splunk-appinspect inspect "TA_posthog_activity_logs-${{ steps.version.outputs.version }}.spl" \
+            --mode precert --included-tags cloud \
+            --output-file appinspect.json --data-format json || true
+
+          python - <<'PY'
+          import json, sys
+          s = json.load(open("appinspect.json"))["summary"]
+          blocking = {k: s.get(k, 0) for k in ("error", "failure", "manual_check")}
+          for k, v in sorted(s.items()):
+              print(f"  {k}: {v}")
+          if any(blocking.values()):
+              # Splunk auto-approves a Cloud submission only at zero on all three; anything
+              # else routes the app to manual vetting or rejects it.
+              print(f"::error::Cloud vetting gate failed: {blocking}")
+              sys.exit(1)
+          print("Cloud vetting gate passed (0 errors, 0 failures, 0 manual checks).")
+          PY
+
+      - name: Check the Python 3.9 floor
+        run: |
+          # The add-on declares python.version = python3, so it runs on Splunk's default
+          # interpreter, which is 3.9 from Splunk 9.2 through 10.x. Anything that needs a newer
+          # Python breaks collection on every supported release.
+          #
+          # splunklib/ai is excluded: it requires 3.13 and is why splunk-sdk declares
+          # Requires-Python >=3.13, but nothing in this add-on imports it.
+          docker run --rm -v "$PWD/TA_posthog_activity_logs/output/TA_posthog_activity_logs:/app" python:3.9-slim \
+            bash -c '
+              set -e
+              python -m compileall -q /app/bin
+              python -m compileall -q -x "splunklib/ai" /app/lib
+              echo "Compiles on Python 3.9."
+            '
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TA_posthog_activity_logs-${{ steps.version.outputs.version }}
+          path: TA_posthog_activity_logs-${{ steps.version.outputs.version }}.spl
+          retention-days: 90
+
+      - name: Extract release notes
+        if: github.ref_type == 'tag'
+        run: |
+          python - <<'PY' > release-notes.md
+          import os, re
+          version = os.environ["VERSION"]
+          body = open("CHANGELOG.md").read()
+          # Take everything under this version's heading up to the next one.
+          m = re.search(rf"^## +{re.escape(version)}\b.*?$\n(.*?)(?=^## |\Z)", body, re.M | re.S)
+          print((m.group(1) if m else "").strip())
+          PY
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+
+      - name: Publish release
+        if: github.ref_type == 'tag'
+        run: |
+          gh release create "${GITHUB_REF_NAME}" \
+            --title "${GITHUB_REF_NAME}" \
+            --notes-file release-notes.md \
+            "TA_posthog_activity_logs-${{ steps.version.outputs.version }}.spl"
+        env:
+          GH_TOKEN: ${{ github.token }}
