@@ -99,7 +99,7 @@
                             "type": "text",
                             "label": "Name",
                             "field": "name",
-                            "help": "A name for this input.",
+                            "help": "A name for this input. Collection continues from wherever this name last stopped, so pick a new name to collect history from the beginning.",
                             "required": true,
                             "validators": [
                                 {
@@ -223,7 +223,7 @@
     "meta": {
         "name": "TA_posthog_activity_logs",
         "restRoot": "TA_posthog_activity_logs",
-        "version": "0.5.0",
+        "version": "0.5.1",
         "displayName": "PostHog activity logs",
         "schemaVersion": "0.0.10",
         "supportedThemes": [

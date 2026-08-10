@@ -4,6 +4,13 @@ Each version needs a `## <version>` section with bullet points. The release work
 section matching the tag and publishes it as the release notes, and it fails the build when the
 section is missing.
 
+## 0.5.1
+
+- Correct the guidance for collecting history again. Deleting an input does not reset its
+  position, so an input recreated under the same name resumes where the old one stopped and
+  collects nothing. Use a new input name instead. The input form now says so.
+- Publish the package as `.tar.gz` alongside `.spl`. They are the same bytes.
+
 ## 0.5.0
 
 - Declare the Python runtimes the add-on supports, 3.9 and 3.13, on the modular input and the REST
