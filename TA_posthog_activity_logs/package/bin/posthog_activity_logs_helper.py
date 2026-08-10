@@ -21,6 +21,11 @@ ADDON_NAME = "TA_posthog_activity_logs"
 SOURCETYPE = "posthog:activity_log"
 PAGE_SIZE = "200"
 
+# Identifies this add-on to PostHog, which reads the header into the activity log's client
+# field and caps it at 32 characters.
+CLIENT_HEADER = "x-posthog-client"
+CLIENT_NAME = "splunk"
+
 
 def logger_for_input(input_name: str) -> logging.Logger:
     return log.Logs().get_logger(f"{ADDON_NAME.lower()}_{input_name}")
@@ -62,7 +67,13 @@ def same_origin(url: str, host: str) -> bool:
 
 
 def fetch(url: str, api_key: str) -> dict:
-    request = Request(url, headers={"Authorization": f"Bearer {api_key}"})
+    request = Request(
+        url,
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            CLIENT_HEADER: CLIENT_NAME,
+        },
+    )
     with urlopen(request, timeout=60) as response:
         return json.loads(response.read().decode("utf-8"))
 

@@ -4,6 +4,11 @@ Each version needs a `## <version>` section with bullet points. The release work
 section matching the tag and publishes it as the release notes, and it fails the build when the
 section is missing.
 
+## 0.6.0
+
+- Identify the add-on to PostHog on every request, so traffic from Splunk is distinguishable from
+  other API clients.
+
 ## 0.5.1
 
 - Correct the guidance for collecting history again. Deleting an input does not reset its
