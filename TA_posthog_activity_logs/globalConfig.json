@@ -157,9 +157,8 @@
                             "type": "index",
                             "label": "Index",
                             "field": "index",
-                            "help": "The index to write events to. You need this to search them.",
-                            "required": true,
-                            "defaultValue": "default"
+                            "help": "The index to write events to. Pick one that exists on this Splunk instance. You need it to search the events.",
+                            "required": true
                         },
                         {
                             "type": "checkbox",
@@ -223,7 +222,7 @@
     "meta": {
         "name": "TA_posthog_activity_logs",
         "restRoot": "TA_posthog_activity_logs",
-        "version": "0.6.0",
+        "version": "0.6.1",
         "displayName": "PostHog activity logs",
         "schemaVersion": "0.0.10",
         "supportedThemes": [

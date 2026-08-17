@@ -4,6 +4,12 @@ Each version needs a `## <version>` section with bullet points. The release work
 section matching the tag and publishes it as the release notes, and it fails the build when the
 section is missing.
 
+## 0.6.1
+
+- Ask you to choose an index when adding an input, rather than prefilling it. You need the index
+  name to search the events, and the previous default was shown as a new value on Splunk Cloud,
+  which read as though it would create one.
+
 ## 0.6.0
 
 - Identify the add-on to PostHog on every request, so traffic from Splunk is distinguishable from
