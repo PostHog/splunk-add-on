@@ -1,0 +1,35 @@
+SPLUNK CLOUD PLATFORM
+
+Go to Apps, then Find More Apps, search for PostHog, and install.
+
+Splunk asks for your Splunk.com login to complete the install. That is a separate account from the one you use to sign in to Splunk Cloud. No restart is needed.
+
+SPLUNK ENTERPRISE
+
+Install from Splunkbase through Apps, then Find More Apps. You can also download the package and install it manually:
+
+1. Copy the package to your search head.
+2. Install it with: $SPLUNK_HOME/bin/splunk install app <package>.spl
+3. Restart Splunk.
+
+DISTRIBUTED DEPLOYMENTS
+
+The add-on collects data through a modular input, so install it where inputs run:
+
+- Single instance: install on that instance.
+- Distributed search: install on a heavy forwarder or the instance you want to collect from, and on search heads for the configuration UI.
+- Search head cluster: deploy through the deployer. Configure inputs on a heavy forwarder rather than on the cluster members, so collection does not run on every member.
+
+AFTER INSTALLING
+
+Open the add-on from the Splunk apps menu, add a PostHog account on the Configuration tab, then add an input on the Inputs tab. The Details tab covers both steps.
+
+REQUIREMENTS
+
+- Splunk Enterprise 9.2 or later, or Splunk Cloud Platform
+- A PostHog personal API key with the activity_log:read scope
+- Activity logs are available on the PostHog Scale and Enterprise plans
+
+UPGRADING
+
+Splunk leaves files from the old version in place when it upgrades an app, so an upgrade can keep dependencies a newer version no longer needs. To reclaim that space, remove the add-on and install it again. Your accounts and inputs are configuration and are not affected.

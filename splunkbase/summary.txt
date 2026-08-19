@@ -1,0 +1,15 @@
+PostHog activity logs record who did what in your PostHog organization. Every change to a feature flag, insight, dashboard, or other resource is captured, along with logins and account provisioning changes.
+
+This add-on collects that record into Splunk, so you can keep an audit trail alongside the rest of your security data, alert on sensitive changes, and meet compliance requirements.
+
+Splunk polls PostHog on a schedule you choose. There is nothing to run or host yourself, and the add-on works the same way on Splunk Cloud Platform and Splunk Enterprise.
+
+Events arrive in Open Cybersecurity Schema Framework (OCSF) 1.5.0, so searches and dashboards that already understand OCSF work without a custom parser. Activity maps to three OCSF classes: Entity Management (3004) for changes to resources, Authentication (3002) for logins and logouts, and Account Change (3001) for provisioning. Activity types with no direct OCSF equivalent keep their original PostHog name, so nothing is dropped.
+
+Each poll resumes from where the previous one stopped, so entries are collected once. Every event carries the PostHog activity log ID in metadata.uid, which is stable across replays if you need to deduplicate.
+
+By default an event records which fields changed, not their values. That answers who changed what and when, which is what an audit trail needs. You can turn on changed values per input when you need the before and after content.
+
+Events are timestamped with when the activity happened in PostHog rather than when Splunk indexed them, so historical searches reflect real history.
+
+The add-on requires a PostHog personal API key with the activity_log:read scope. Activity logs are available on the PostHog Scale and Enterprise plans.

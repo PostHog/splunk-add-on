@@ -1,0 +1,49 @@
+The add-on writes its own log. Search it in Splunk with:
+
+    index=_internal source=*ta_posthog_activity_logs*
+
+You can raise the detail level on the add-on's Configuration tab, under Logging.
+
+FIRST CHECK AFTER SETUP
+
+Set the time range to All time. Splunk's default range covers the last 24 hours, and your PostHog history is usually older than that, so a narrower range shows a fraction of what was collected and looks like a partial sync.
+
+    index=<your index> sourcetype="posthog:activity_log"
+
+COMMON ISSUES
+
+401 from PostHog
+The personal API key is wrong or was revoked. Create a new key in PostHog under Settings, User, Personal API keys, and update the account on the Configuration tab.
+
+403 from PostHog
+The key does not have the activity_log:read scope, or the user is not an admin or owner of the organization. Organization-wide collection is restricted to admins and owners.
+
+402 from PostHog
+The PostHog organization does not have activity logs on its plan. They are included on the Scale and Enterprise plans. This applies to PostHog Cloud; self-hosted PostHog is not gated on plan.
+
+The input runs but indexes nothing
+The input is up to date and there is nothing new to collect. Make a change in PostHog, such as editing a feature flag, and wait for the next poll.
+
+Events are missing, or fewer than expected
+Check the time range first, as above. If the count is still short, confirm the input is writing to the index you are searching. The index is shown in the Inputs table.
+
+No events, and the log shows "returned a next link to another host"
+This affects self-hosted PostHog behind a reverse proxy that does not preserve the Host header. PostHog builds the paging links in its responses from the host it sees, so the links point at an internal address the add-on will not follow. Configure the proxy to pass the original Host header.
+
+Events all share one timestamp
+Something in your configuration is overriding the event time, usually a props.conf setting elsewhere that applies to this sourcetype. This add-on sets the event time explicitly from the activity timestamp.
+
+Cannot enter an http address for the host
+This is intentional. The API key is sent as a bearer token on every request, so the add-on accepts https addresses only.
+
+RE-READING HISTORY
+
+To collect from the beginning again, add a new input with a different name.
+
+The collection position is stored per input name and is not removed when an input is deleted, so an input recreated under the same name resumes where the old one stopped and collects nothing.
+
+Deduplicate on metadata.uid, which is stable across replays, if the re-read overlaps entries you already have.
+
+GETTING HELP
+
+Open a support ticket at https://us.posthog.com/#panel=support:support, or file an issue at https://github.com/PostHog/splunk-add-on.

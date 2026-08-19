@@ -1,0 +1,84 @@
+WHAT YOU GET
+
+Each PostHog activity log entry arrives in Splunk as an OCSF 1.5.0 event with the sourcetype posthog:activity_log.
+
+Activity maps to three OCSF classes:
+
+- Entity Management (class_uid 3004): changes to insights, dashboards, feature flags, and other resources
+- Authentication (class_uid 3002): logins and logouts
+- Account Change (class_uid 3001): account provisioning changes
+
+Activity types without a direct OCSF equivalent use activity_id 99 and carry the original PostHog activity name in activity_name, so nothing is dropped.
+
+BEFORE YOU START
+
+You need:
+
+- A PostHog personal API key with the activity_log:read scope. Create one in PostHog under Settings, User, Personal API keys.
+- Your PostHog organization ID, found under Settings, Organization.
+- Admin or owner access to the PostHog organization, to collect activity across every project.
+
+Activity logs are available on the PostHog Scale and Enterprise plans.
+
+CONFIGURE AN ACCOUNT
+
+Open the add-on from the Splunk apps menu and go to the Configuration tab, then click Add:
+
+- Name: a name for the account, so you can pick it when you add an input
+- PostHog host: https://us.posthog.com, https://eu.posthog.com, or your self-hosted address
+- Personal API key: a key with the activity_log:read scope
+
+The key is held in Splunk's encrypted credential store. One account can serve several inputs.
+
+Changing an account's host requires entering the key again. A key is authorized for the host it was entered against, so it does not travel to a new host on its own.
+
+ADD AN INPUT
+
+Go to the Inputs tab and click Create New Input:
+
+- Name: a name for this input. Collection continues from wherever this name last stopped, so pick a new name to collect history from the beginning
+- Account: the account you configured
+- Organization ID: collects activity across every project in this organization
+- Interval: how often to poll, in seconds. 300 is a reasonable start
+- Index: the index to write to. Pick one that exists on this Splunk instance, and note it, because you need it to search
+- Include changed values: leave off unless you need before and after values
+- Start date: optional ISO-8601 lower bound for the first run, for example 2026-01-01T00:00:00Z
+
+Splunk polls on your interval and resumes from where it stopped, so entries are not collected twice.
+
+ABOUT CHANGED VALUES
+
+By default an event records which fields changed, not their values. That answers who changed what and when, which is what an audit trail needs.
+
+Turning on Include changed values adds the previous and new values, mapped to the OCSF entity and entity_result attributes. Values can contain the content of the changed object, such as the body of a notebook or the targeting rules on a feature flag. Including them makes events larger and sends that content to Splunk, where it counts toward your ingest volume.
+
+VERIFY
+
+Search the index you chose when you added the input, with the time range set to All time for this first check:
+
+    index=<your index> sourcetype="posthog:activity_log"
+
+To check that the OCSF fields parsed:
+
+    index=<your index> sourcetype="posthog:activity_log" | stats count by class_uid, activity_id
+
+Events are timestamped with when the activity happened in PostHog, not when Splunk indexed them, so a timechart reflects real history.
+
+DEDUPLICATION
+
+Every event carries the PostHog activity log ID in metadata.uid. It is stable across replays, so you can deduplicate on it if an input is ever configured to re-read history.
+
+REQUESTS TO POSTHOG
+
+The add-on identifies itself on every request, so you can tell collection traffic from Splunk apart from other clients of your PostHog API.
+
+SELF-HOSTED POSTHOG
+
+Enter your own address as the PostHog host. Two things it needs:
+
+- https. The API key is sent as a bearer token on every request, so the add-on will not use a plain HTTP address.
+- A preserved Host header, if PostHog sits behind a reverse proxy. PostHog builds the paging links in its responses from the host it sees. If the proxy replaces that with an internal address, the links point somewhere the add-on will not follow.
+
+SOURCE
+
+The add-on is open source and developed at https://github.com/PostHog/splunk-add-on.
