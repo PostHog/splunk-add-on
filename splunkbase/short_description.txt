@@ -1,1 +1,0 @@
-Collect PostHog activity logs into Splunk as OCSF events. Splunk polls PostHog on a schedule you set, giving you an audit trail of who changed what in your PostHog organization alongside the rest of your security data. Works on Splunk Cloud Platform and Splunk Enterprise.
